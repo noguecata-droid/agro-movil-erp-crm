@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agro Móvil ERP/CRM - Plantas de Empaque Agroexportador</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { 600: '#15803d', 700: '#166534', 800: '#14532d' } } } }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <header class="bg-brand-800 text-white shadow">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div>
+        <h1 class="text-2xl font-bold">Agro Móvil ERP &amp; CRM</h1>
+        <p class="text-sm text-green-100">Plantas de Empaque Agroexportador Móviles y Contenedorizadas · Modelo IaaS: <span class="font-semibold">$0.15 / kg procesado</span> (sin inversión inicial)</p>
+      </div>
+      <div class="text-sm bg-brand-700 px-3 py-2 rounded">Pago por uso · Reefer 40 pies</div>
+    </div>
+  </header>
+
+  <nav class="bg-white border-b sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <button data-tab="dashboard" class="tab-btn px-4 py-3 border-b-2 border-brand-600 text-brand-700 font-medium">Dashboard</button>
+      <button data-tab="crm" class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brand-700">CRM Agricultores</button>
+      <button data-tab="erp" class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brand-700">ERP Operaciones</button>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div id="alert" class="hidden rounded p-3 text-sm"></div>
+
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard" class="tab-panel space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="stats-cards"></div>
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Resumen por ubicación</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left">
+              <tr>
+                <th class="p-2">Ubicación</th>
+                <th class="p-2">Lotes</th>
+                <th class="p-2">Kilos procesados</th>
+                <th class="p-2">Cobro total</th>
+              </tr>
+            </thead>
+            <tbody id="summary-locations"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-900">
+        <strong>Modelo IaaS:</strong> El agricultor no realiza inversión inicial. El servicio de empaque y contenedorización móvil se factura automáticamente a <strong>$0.15 por cada kilogramo procesado</strong> en contenedores Reefer de 40 pies.
+      </div>
+    </section>
+
+    <!-- CRM -->
+    <section id="tab-crm" class="tab-panel hidden space-y-6">
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Registrar agricultor</h2>
+        <form id="farmer-form" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input name="nombre" required placeholder="Nombre" class="border rounded px-3 py-2" />
+          <select name="ubicacion" required class="border rounded px-3 py-2">
+            <option value="">Ubicación</option>
+            <option value="Carchi">Carchi</option>
+            <option value="Santo Domingo">Santo Domingo</option>
+          </select>
+          <input name="producto" required placeholder="Producto (ej. brócoli, piña)" class="border rounded px-3 py-2" />
+          <button class="bg-brand-600 hover:bg-brand-700 text-white rounded px-4 py-2 font-medium">Guardar agricultor</button>
+        </form>
+      </div>
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Agricultores registrados</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left">
+              <tr>
+                <th class="p-2">ID</th><th class="p-2">Nombre</th><th class="p-2">Ubicación</th><th class="p-2">Producto</th><th class="p-2">Registro</th><th class="p-2">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="farmers-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ERP -->
+    <section id="tab-erp" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow p-4">
+          <h2 class="text-lg font-semibold mb-3">Gestionar contenedor Reefer 40 pies</h2>
+          <form id="container-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input name="codigo" required placeholder="Código (ej. REEFER-40-001)" class="border rounded px-3 py-2 sm:col-span-2" />
+            <select name="estado" class="border rounded px-3 py-2">
+              <option value="Disponible">Disponible</option>
+              <option value="En uso">En uso</option>
+              <option value="Mantenimiento">Mantenimiento</option>
+            </select>
+            <input name="ubicacion_actual" placeholder="Ubicación actual" class="border rounded px-3 py-2" />
+            <button class="bg-brand-600 hover:bg-brand-700 text-white rounded px-4 py-2 font-medium sm:col-span-2">Guardar contenedor</button>
+          </form>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-4">
+          <h2 class="text-lg font-semibold mb-3">Registrar lote procesado</h2>
+          <form id="lot-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <select name="farmer_id" id="lot-farmer" required class="border rounded px-3 py-2 sm:col-span-2"></select>
+            <select name="container_id" id="lot-container" class="border rounded px-3 py-2 sm:col-span-2"></select>
+            <input name="producto" required placeholder="Producto" class="border rounded px-3 py-2" />
+            <input name="kilos" required type="number" min="0.01" step="0.01" placeholder="Kilos procesados" class="border rounded px-3 py-2" />
+            <div class="sm:col-span-2 bg-slate-50 border rounded px-3 py-2 text-sm">
+              Tarifa: <strong>$0.15/kg</strong> · Cobro estimado: <strong id="lot-estimate">$0.00</strong>
+            </div>
+            <input name="notas" placeholder="Notas (opcional)" class="border rounded px-3 py-2 sm:col-span-2" />
+            <button class="bg-brand-600 hover:bg-brand-700 text-white rounded px-4 py-2 font-medium sm:col-span-2">Registrar lote y calcular cobro</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Contenedores Reefer 40 pies</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left">
+              <tr><th class="p-2">ID</th><th class="p-2">Código</th><th class="p-2">Tipo</th><th class="p-2">Estado</th><th class="p-2">Ubicación actual</th><th class="p-2">Acciones</th></tr>
+            </thead>
+            <tbody id="containers-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Lotes procesados y facturación</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left">
+              <tr>
+                <th class="p-2">ID</th><th class="p-2">Fecha</th><th class="p-2">Agricultor</th><th class="p-2">Ubicación</th><th class="p-2">Producto</th><th class="p-2">Contenedor</th><th class="p-2">Kilos</th><th class="p-2">Tarifa</th><th class="p-2">Total cobro</th><th class="p-2">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="lots-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const RATE = 0.15;
+    const fmtMoney = (n) => '$' + Number(n || 0).toFixed(2);
+    const fmtNum = (n) => Number(n || 0).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function showAlert(msg, type = 'success') {
+      const el = document.getElementById('alert');
+      el.className = 'rounded p-3 text-sm ' + (type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.add('hidden'), 4000);
+    }
+
+    async function api(url, opts = {}) {
+      const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Error en la solicitud');
+      return data;
+    }
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brand-700');
+        btn.className = 'tab-btn px-4 py-3 border-b-2 border-brand-600 text-brand-700 font-medium';
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    async function loadDashboard() {
+      const s = await api('/api/summary');
+      document.getElementById('stats-cards').innerHTML = [
+        ['Agricultores', s.farmers],
+        ['Contenedores', s.containers],
+        ['Lotes procesados', s.lots],
+        ['Kilos totales', fmtNum(s.kilos_total) + ' kg'],
+        ['Cobro total', fmtMoney(s.cobro_total)],
+      ].map(([label, val]) => `
+        <div class="bg-white rounded-lg shadow p-4">
+          <div class="text-sm text-slate-500">${label}</div>
+          <div class="text-2xl font-bold text-brand-700">${val}</div>
+        </div>`).join('');
+      const locs = s.byLocation || [];
+      document.getElementById('summary-locations').innerHTML = locs.length ? locs.map(r => `
+        <tr class="border-t">
+          <td class="p-2 font-medium">${r.ubicacion || '—'}</td>
+          <td class="p-2">${r.lotes || 0}</td>
+          <td class="p-2">${fmtNum(r.kilos)} kg</td>
+          <td class="p-2">${fmtMoney(r.cobro)}</td>
+        </tr>`).join('') : '<tr><td class="p-2 text-slate-500" colspan="4">Sin datos aún.</td></tr>';
+    }
+
+    async function loadFarmers() {
+      const farmers = await api('/api/farmers');
+      document.getElementById('farmers-table').innerHTML = farmers.length ? farmers.map(f => `
+        <tr class="border-t">
+          <td class="p-2">${f.id}</td>
+          <td class="p-2 font-medium">${esc(f.nombre)}</td>
+          <td class="p-2">${esc(f.ubicacion)}</td>
+          <td class="p-2">${esc(f.producto)}</td>
+          <td class="p-2 text-slate-500">${esc(f.created_at || '')}</td>
+          <td class="p-2"><button data-id="${f.id}" class="del-farmer text-red-600 hover:underline">Eliminar</button></td>
+        </tr>`).join('') : '<tr><td class="p-2 text-slate-500" colspan="6">No hay agricultores registrados.</td></tr>';
+      document.querySelectorAll('.del-farmer').forEach(b => b.onclick = async () => {
+        if (!confirm('¿Eliminar agricultor y sus lotes asociados?')) return;
+        try { await api('/api/farmers/' + b.dataset.id, { method: 'DELETE' }); showAlert('Agricultor eliminado'); refreshAll(); }
+        catch(e){ showAlert(e.message, 'error'); }
+      });
+      // update lot form selects
+      const sel = document.getElementById('lot-farmer');
+      sel.innerHTML = '<option value="">Seleccione agricultor</option>' + farmers.map(f => `<option value="${f.id}">${esc(f.nombre)} — ${esc(f.ubicacion)} (${esc(f.producto)})</option>`).join('');
+    }
+
+    async function loadContainers() {
+      const containers = await api('/api/containers');
+      document.getElementById('containers-table').innerHTML = containers.length ? containers.map(c => `
+        <tr class="border-t">
+          <td class="p-2">${c.id}</td>
+          <td class="p-2 font-medium">${esc(c.codigo)}</td>
+          <td class="p-2">${esc(c.tipo)}</td>
+          <td class="p-2"><span class="px-2 py-0.5 rounded text-xs ${badge(c.estado)}">${esc(c.estado)}</span></td>
+          <td class="p-2">${esc(c.ubicacion_actual || '—')}</td>
+          <td class="p-2"><button data-id="${c.id}" class="del-container text-red-600 hover:underline">Eliminar</button></td>
+        </tr>`).join('') : '<tr><td class="p-2 text-slate-500" colspan="6">No hay contenedores registrados.</td></tr>';
+      document.querySelectorAll('.del-container').forEach(b => b.onclick = async () => {
+        if (!confirm('¿Eliminar contenedor?')) return;
+        try { await api('/api/containers/' + b.dataset.id, { method: 'DELETE' }); showAlert('Contenedor eliminado'); refreshAll(); }
+        catch(e){ showAlert(e.message, 'error'); }
+      });
+      const sel = document.getElementById('lot-container');
+      sel.innerHTML = '<option value="">Sin contenedor asignado</option>' + containers.map(c => `<option value="${c.id}">${esc(c.codigo)} — ${esc(c.estado)}</option>`).join('');
+    }
+
+    async function loadLots() {
+      const lots = await api('/api/lots');
+      document.getElementById('lots-table').innerHTML = lots.length ? lots.map(l => `
+        <tr class="border-t">
+          <td class="p-2">${l.id}</td>
+          <td class="p-2 text-slate-500">${esc(l.fecha || '')}</td>
+          <td class="p-2 font-medium">${esc(l.farmer_nombre)}</td>
+          <td class="p-2">${esc(l.farmer_ubicacion)}</td>
+          <td class="p-2">${esc(l.producto)}</td>
+          <td class="p-2">${esc(l.container_codigo || '—')}</td>
+          <td class="p-2">${fmtNum(l.kilos)}</td>
+          <td class="p-2">${fmtMoney(l.tarifa_por_kg)}</td>
+          <td class="p-2 font-semibold text-brand-700">${fmtMoney(l.total_cobro)}</td>
+          <td class="p-2"><button data-id="${l.id}" class="del-lot text-red-600 hover:underline">Eliminar</button></td>
+        </tr>`).join('') : '<tr><td class="p-2 text-slate-500" colspan="10">No hay lotes registrados.</td></tr>';
+      document.querySelectorAll('.del-lot').forEach(b => b.onclick = async () => {
+        if (!confirm('¿Eliminar lote?')) return;
+        try { await api('/api/lots/' + b.dataset.id, { method: 'DELETE' }); showAlert('Lote eliminado'); refreshAll(); }
+        catch(e){ showAlert(e.message, 'error'); }
+      });
+    }
+
+    function badge(estado) {
+      if (estado === 'Disponible') return 'bg-green-100 text-green-800';
+      if (estado === 'En uso') return 'bg-blue-100 text-blue-800';
+      return 'bg-amber-100 text-amber-800';
+    }
+    function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // Forms
+    document.getElementById('farmer-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      try {
+        await api('/api/farmers', { method: 'POST', body: JSON.stringify(Object.fromEntries(fd)) });
+        e.target.reset(); showAlert('Agricultor registrado'); refreshAll();
+      } catch (err) { showAlert(err.message, 'error'); }
+    });
+
+    document.getElementById('container-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      try {
+        await api('/api/containers', { method: 'POST', body: JSON.stringify(Object.fromEntries(fd)) });
+        e.target.reset(); showAlert('Contenedor registrado'); refreshAll();
+      } catch (err) { showAlert(err.message, 'error'); }
+    });
+
+    const kilosInput = document.querySelector('#lot-form [name="kilos"]');
+    kilosInput.addEventListener('input', () => {
+      const k = parseFloat(kilosInput.value || 0);
+      document.getElementById('lot-estimate').textContent = fmtMoney(k > 0 ? k * RATE : 0);
+    });
+
+    document.getElementById('lot-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = Object.fromEntries(fd);
+      if (!payload.container_id) payload.container_id = null;
+      try {
+        const lot = await api('/api/lots', { method: 'POST', body: JSON.stringify(payload) });
+        e.target.reset();
+        document.getElementById('lot-estimate').textContent = '$0.00';
+        showAlert(`Lote registrado. Cobro calculado: ${fmtMoney(lot.total_cobro)} (${fmtNum(lot.kilos)} kg × $0.15)`);
+        refreshAll();
+      } catch (err) { showAlert(err.message, 'error'); }
+    });
+
+    async function refreshAll() {
+      try {
+        await Promise.all([loadDashboard(), loadFarmers(), loadContainers(), loadLots()]);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    refreshAll();
+  </script>
+</body>
+</html>
